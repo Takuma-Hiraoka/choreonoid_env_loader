@@ -54,6 +54,7 @@ namespace choreonoid_env_loader{
       tinyxml2::XMLElement* child = joint->FirstChildElement("child");
       std::string name = child->Attribute("link");
       tinyxml2::XMLElement* origin = joint->FirstChildElement("origin");
+      std::string joint_type = joint->Attribute("type");
       cnoid::Matrix3 rot;
       {
 	std::vector<double> rpy;
@@ -76,12 +77,16 @@ namespace choreonoid_env_loader{
 	if (name == static_obstacles[i]->name()) {
 	  static_obstacles[i]->rootLink()->p() = pos;
 	  static_obstacles[i]->rootLink()->R() = rot;
+	  if (joint_type == "floating") static_obstacles[i]->rootLink()->setJointType(cnoid::Link::JointType::FreeJoint);
+	  else static_obstacles[i]->rootLink()->setJointType(cnoid::Link::JointType::FixedJoint);
 	}
       }
       for (int i=0; i<movable_obstacles.size(); i++) {
 	if (name == movable_obstacles[i]->name()) {
 	  movable_obstacles[i]->rootLink()->p() = pos;
 	  movable_obstacles[i]->rootLink()->R() = rot;
+	  if (joint_type == "floating") movable_obstacles[i]->rootLink()->setJointType(cnoid::Link::JointType::FreeJoint);
+	  else movable_obstacles[i]->rootLink()->setJointType(cnoid::Link::JointType::FixedJoint);
 	}
       }
     }

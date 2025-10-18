@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Release)
 
 find_package(catkin REQUIRED COMPONENTS
-  ik_constraint2_distance_field
   )
 
 find_package(choreonoid REQUIRED)
@@ -13,7 +12,7 @@ find_package(choreonoid REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS ik_constraint2_distance_field
+  CATKIN_DEPENDS
 )
 
 include_directories(

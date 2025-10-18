@@ -1,14 +1,24 @@
 #include <choreonoid_env_loader/choreonoid_env_loader.h>
 #include <cnoid/URDFBodyLoader>
 #include <cnoid/EigenUtil>
-#include <filesystem>
 #include <tinyxml2.h>
+#include <iostream>
 
 namespace choreonoid_env_loader{
   void generateEnvironment(const std::string project_location,
 			   const std::string conf_file,
 			   const std::string mesh_dir,
-			   std::shared_ptr<moveit_extensions::InterpolatedPropagationDistanceField> field,
+			   std::vector<cnoid::BodyPtr>& obstacles
+			   ) {
+    obstacles.clear();
+    std::vector<cnoid::BodyPtr> movable_obstacles;
+    generateEnvironment(project_location, conf_file, mesh_dir, obstacles, movable_obstacles);
+    obstacles.insert(obstacles.end(), movable_obstacles.begin(), movable_obstacles.end());
+  }
+
+  void generateEnvironment(const std::string project_location,
+			   const std::string conf_file,
+			   const std::string mesh_dir,
 			   std::vector<cnoid::BodyPtr>& static_obstacles,
 			   std::vector<cnoid::BodyPtr>& movable_obstacles
 			   ) {

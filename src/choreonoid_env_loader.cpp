@@ -6,10 +6,10 @@
 
 namespace choreonoid_env_loader{
   void generateEnvironment(const std::string project_location,
-			   const std::string conf_file,
-			   const std::string mesh_dir,
-			   std::vector<cnoid::BodyPtr>& obstacles
-			   ) {
+                           const std::string conf_file,
+                           const std::string mesh_dir,
+                           std::vector<cnoid::BodyPtr>& obstacles
+                           ) {
     obstacles.clear();
     std::vector<cnoid::BodyPtr> movable_obstacles;
     generateEnvironment(project_location, conf_file, mesh_dir, obstacles, movable_obstacles);
@@ -17,11 +17,11 @@ namespace choreonoid_env_loader{
   }
 
   void generateEnvironment(const std::string project_location,
-			   const std::string conf_file,
-			   const std::string mesh_dir,
-			   std::vector<cnoid::BodyPtr>& static_obstacles,
-			   std::vector<cnoid::BodyPtr>& movable_obstacles
-			   ) {
+                           const std::string conf_file,
+                           const std::string mesh_dir,
+                           std::vector<cnoid::BodyPtr>& static_obstacles,
+                           std::vector<cnoid::BodyPtr>& movable_obstacles
+                           ) {
     static_obstacles.clear();
     movable_obstacles.clear();
     tinyxml2::XMLDocument doc;
@@ -40,13 +40,13 @@ namespace choreonoid_env_loader{
       cnoid::URDFBodyLoader loader;
       cnoid::BodyPtr body = new cnoid::Body();
       if(loader.load(body, project_location + "/" + model + "_" + category + ".urdf")) {
-	body->setName(name);
-	body->rootLink()->setName(name);
-	static_obstacles.push_back(body);
+        body->setName(name);
+        body->rootLink()->setName(name);
+        static_obstacles.push_back(body);
       } else if (loader.load(body, mesh_dir + "/" + category + "/" + model + "/" + model + ".urdf")){
-	body->setName(name);
-	body->rootLink()->setName(name);
-	movable_obstacles.push_back(body);
+        body->setName(name);
+        body->rootLink()->setName(name);
+        movable_obstacles.push_back(body);
       } else std::cerr << "cannnot load urdf of link " << name << std::endl;
     }
 
@@ -57,40 +57,48 @@ namespace choreonoid_env_loader{
       std::string joint_type = joint->Attribute("type");
       cnoid::Matrix3 rot;
       {
-	std::vector<double> rpy;
-	std::stringstream ss(origin->Attribute("rpy"));
-	double v;
-	while (ss >> v) rpy.push_back(v);
-	if (rpy.size() != 3) std::cerr << "error! length of " << name << " rpy is not 3" << std::endl;
-	rot = cnoid::rotFromRpy(rpy[0], rpy[1], rpy[2]);
+        std::vector<double> rpy;
+        std::stringstream ss(origin->Attribute("rpy"));
+        double v;
+        while (ss >> v) rpy.push_back(v);
+        if (rpy.size() != 3) std::cerr << "error! length of " << name << " rpy is not 3" << std::endl;
+        rot = cnoid::rotFromRpy(rpy[0], rpy[1], rpy[2]);
       }
-      cnoid::Vector3 pos; 
+      cnoid::Vector3 pos;
       {
-	std::vector<double> xyz;
-	std::stringstream ss(origin->Attribute("xyz"));
-	double v;
-	while (ss >> v) xyz.push_back(v);
-	if (xyz.size() != 3) std::cerr << "error! length of " << name << " xyz is not 3" << std::endl;
+        std::vector<double> xyz;
+        std::stringstream ss(origin->Attribute("xyz"));
+        double v;
+        while (ss >> v) xyz.push_back(v);
+        if (xyz.size() != 3) std::cerr << "error! length of " << name << " xyz is not 3" << std::endl;
         pos = cnoid::Vector3(xyz[0], xyz[1], xyz[2]);
       }
       for (int i=0; i<static_obstacles.size(); i++) {
-	if (name == static_obstacles[i]->name()) {
-	  static_obstacles[i]->rootLink()->p() = pos;
-	  static_obstacles[i]->rootLink()->R() = rot;
-	  if (joint_type == "floating") static_obstacles[i]->rootLink()->setJointType(cnoid::Link::JointType::FreeJoint);
-	  else static_obstacles[i]->rootLink()->setJointType(cnoid::Link::JointType::FixedJoint);
-	}
+        if (name == static_obstacles[i]->name()) {
+          static_obstacles[i]->rootLink()->p() = pos;
+          static_obstacles[i]->rootLink()->R() = rot;
+          if (joint_type == "floating") static_obstacles[i]->rootLink()->setJointType(cnoid::Link::JointType::FreeJoint);
+          else static_obstacles[i]->rootLink()->setJointType(cnoid::Link::JointType::FixedJoint);
+        }
       }
       for (int i=0; i<movable_obstacles.size(); i++) {
-	if (name == movable_obstacles[i]->name()) {
-	  movable_obstacles[i]->rootLink()->p() = pos;
-	  movable_obstacles[i]->rootLink()->R() = rot;
-	  if (joint_type == "floating") movable_obstacles[i]->rootLink()->setJointType(cnoid::Link::JointType::FreeJoint);
-	  else movable_obstacles[i]->rootLink()->setJointType(cnoid::Link::JointType::FixedJoint);
-	}
+        if (name == movable_obstacles[i]->name()) {
+          movable_obstacles[i]->rootLink()->p() = pos;
+          movable_obstacles[i]->rootLink()->R() = rot;
+          if (joint_type == "floating") movable_obstacles[i]->rootLink()->setJointType(cnoid::Link::JointType::FreeJoint);
+          else movable_obstacles[i]->rootLink()->setJointType(cnoid::Link::JointType::FixedJoint);
+        }
       }
     }
-     
+
+    for (int i=0; i<static_obstacles.size(); i++) {
+      static_obstacles[i]->calcForwardKinematics();
+      static_obstacles[i]->calcCenterOfMass();
+    }
+    for (int i=0; i<movable_obstacles.size(); i++) {
+      movable_obstacles[i]->calcForwardKinematics();
+      movable_obstacles[i]->calcCenterOfMass();
+    }
   }
 
 }
